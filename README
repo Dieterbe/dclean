@@ -1,0 +1,12 @@
+simple bash script that goes through a directory, iterating its child
+files and folders, ordered by a criteria you pick.
+
+you can then do some actions with these files/directories
+the idea is that you can clean up directories with minimal keystrokes
+
+requirements: needs svn and git installed, and only supports these
+obviously you are presented to open files with tools, and you want to do
+that, you need them. (mplayer, xdg-open,..)
+
+todo: tresholds and more stuff.
+ see http://bbs.archlinux.org/viewtopic.php?id=87167

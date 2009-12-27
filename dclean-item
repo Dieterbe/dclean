@@ -1,0 +1,150 @@
+#!/bin/bash
+
+# helps you clean up a specific file or directory, called by dclean but can be useful by itself
+# $1 filename
+# $2 vcs type (optional)
+
+die () {
+	echo "$@" >&2
+	exit 2
+}
+
+function action_open () {
+	echo "Open with?:" #TODO check extension, mimetype, num of lines and give this info. 
+	# todo: maybe, if xdg-open was smarter and you could tell it at runtime and it would remember, we could use only that
+	# for now, maybe a dclean config with preferred apps?
+	echo "  [c]ustom"
+	echo "  [C]at"
+	echo "  [l]ess"
+	echo "  [m]player"
+	echo "  [v]im"
+	echo "  [Q]iv"
+	echo "  [x]dg-open"
+	echo "  [q]uit"
+	read -n 1 open_with
+	case $open_with in
+		c) read -p "command: " command ; $command "$target";; 
+		C) cat      "$target" ;;
+		l) less     "$target" ;;
+		m) mplayer  "$target" ;;
+		v) vim      "$target" ;;
+		q) exit 123 ;;
+		Q) qiv      "$target" ;;
+		x) xdg-open "$target" ;;
+	esac
+
+}
+
+
+[ -z "$1" -o ! -r "$1" ] && die "\$1 must be a readable file/directory. not: $1"
+target=$1
+if [ -n "$2" ]
+then
+        if [ "$2" != git -a "$2" != svn -a "$2" != normal ]
+        then
+                die "\$2 must be one of: svn, git, normal. not: $2"
+        fi
+fi
+type=${2:-normal}
+
+done= # only set this var to true when the user would be a real weirdo to say he wasn't done.
+while [ "$done" != y ]
+do
+	echo "---------------------------------------------"
+	ls -alhd $target # TODO make this configurable. maybe a du -hsc of dirs? or ls -alh of contents?
+	[ $type != normal ] && $type status "$target"
+	echo "> actions:"
+	[ $type != normal ] && echo " [a]dd to $type"
+	[ $type != normal ] && echo " [c]ommit in $type"
+	[ $type != normal ] && echo " [d]iff" || echo "[d]iff against file"
+	[ $type != normal ] && echo " [D]iff against file"
+	[ $type != normal ] && echo " [i]gnore in $type"
+	echo " [m]v"
+	echo " [M]eld"
+	echo " [r]m"
+	[ $type != normal ] && echo " [R]evert in $type (* checkout in git)"
+	echo " [o]pen"
+	echo " [s]kip (or <Enter>)"
+	echo " [q]uit"
+
+	if read -n 1
+	then
+		case $REPLY in
+			a)
+				if [ $type == normal ]
+				then
+					echo "not under VCS"
+				else
+					$type add "$target" && done=y
+				fi
+				;;
+			c)
+				if [ $type == normal ]
+				then
+					echo "not under VCS"
+				else
+					$type commit "$target" && done=y
+				fi
+				;;
+			d|D)
+				if [ $type != normal -a $REPLY == d ]
+				then
+					$type diff "$target"
+				else
+					echo "diff with which file/directory?" #TODO keep cachefile in $XDG_DATA_HOME and propose options. show permissions of files
+					read diff
+					diff "$target" "$diff"
+				fi
+				;;
+			i)
+				if [ $type == normal ]
+				then
+					echo "not under VCS"
+				else
+					echo "TODO add a nice entry compatible with svn/git, and ordered"
+				fi
+				;;
+			m)
+				#TODO cachefile
+				echo TODO;;
+			M)
+				echo "meld with which file/directory?" # use same cachefile as with d/D
+				read diff
+				meld "$target" "$diff"
+				;;
+			r)
+				echo "rm -r $target ?"
+				echo "y: yes"
+				echo "Y: yes, and force"
+				echo "*: no"
+				read -n 1 del
+				[ "$del" == y ] && rm -r  "$target" && done=y
+				[ "$del" == Y ] && rm -rf "$target" && done=y
+				;;
+			R)
+				if [ $type == normal ]
+				then
+					echo "not under VCS"
+				elif [ $type == svn ]
+				then
+					$type revert "$target" && done=y
+				elif [ $type == git ]
+				then
+					git checkout "$target" && done=y
+				fi
+				;;
+			q)
+				exit 123;;
+			o)
+				action_open;;
+			*)
+				echo "skipping"
+				done=y;;
+		esac
+	fi
+done
+
+echo
+echo
+echo
+echo

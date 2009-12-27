@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# main program
+# $1 directory
+# $2 order criterium
+
+die () {
+	echo "$@" >&2
+	exit 2
+}
+
+[ -z "$1" -o ! -r "$1" -o ! -d "$1" ] && die "\$1 must be a readable directory. not: $1"
+if [ -n "$2" ]
+then
+	if [ "$2" != atime -a "$2" != mtime -a "$2" != ctime -a "$2" != size ]
+	then
+		die "\$2 must be one of: atime, mtime, ctime, size. not: $2"
+	fi
+fi
+dir=$1
+order=${2:-size}
+
+if [ -r "$dir/.svn" ] && svn info "$dir" &>/dev/null
+then
+	type=svn
+	echo "detected svn dir"
+else
+	# with git, do not check for $dir/.git, there is only a .git in the project root
+	cd "$dir" || die "cannot cd into $dir. this should never happen"
+	git status &>/dev/null
+	if [ $? -lt 128 ]
+	then
+		type=git
+		echo "detected git dir"
+	fi
+	cd - >/dev/null || die "cannot go back to dir where i started. this should never happen"
+fi
+if [ -z "$type" ]
+then
+	type=normal
+	echo "detected non-vcs dir"
+fi
+
+# find is great because of its good conditionals, but lacks support for ordering
+# ls is good for ordering files, but has no conditionals
+# the following trick gives us what we need, albeit not the most efficient.
+
+var_size=s # bytes
+var_atime=X
+var_mtime=Y
+var_ctime=Z
+variable=var_$order
+var=${!variable}
+
+sort_order= # small -> big (oldest first)
+if [ $order == size ]
+then
+	sort_order='-r' # big -> small (bigger files first)
+fi
+
+for i in `find "$dir" -maxdepth 1 -exec stat -c "$var %n" {} + | sort -n $sort_order | cut -d ' ' -f2`
+do
+	#TODO printf with nice columns
+	echo -n "$i .."
+	state=
+	if [ $type == svn ]
+	then
+		status=$(svn status "$i")
+		if [[ -n "$status" && $status != I* ]]
+		then
+			echo "dirty"
+		else
+			echo "clean"
+			continue
+		fi
+	elif [ $type == git ]
+	then
+		#TODO
+		echo "warning. git not supported yet. treating as unversioned (no optimisations)" #not skipping anything even if they are clean in git
+	else
+		echo
+	fi
+	if [ ! -r "$i" ]
+	then
+		echo "no read permissions. skipping.."
+		continue
+	fi
+	dclean-item "$i" "$type"
+	[ $? -eq 123 ] && exit 123
+done
