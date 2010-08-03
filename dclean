@@ -65,6 +65,7 @@ do
 	state=
 	if [ $type == svn ]
 	then
+		[[ $i =~ /.svn$ ]] && continue
 		status=$(svn status "$i")
 		if [[ -n "$status" && $status != I* ]]
 		then
