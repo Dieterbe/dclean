@@ -141,6 +141,11 @@ do
 				echo "skipping"
 				done=y;;
 		esac
+		if [ $REPLY != 'r' -a ! -r "$target" ];
+		then
+			echo "It seems like whatever you did caused the file to vanish.  That's fine by me. Skipping..."
+			done=y
+		fi
 	fi
 done
 
