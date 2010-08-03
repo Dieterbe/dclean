@@ -58,7 +58,9 @@ then
 	sort_order='-r' # big -> small (bigger files first)
 fi
 
-for i in `find "$dir" -maxdepth 1 -exec stat -c "%$var %n" {} + | sort -n $sort_order | cut -d ' ' -f2`
+OLD_IFS=$IFS
+IFS=$'\n'
+for i in `find "$dir" -maxdepth 1 -exec stat -c "%$var %n" {} + | sort -n $sort_order | sed 's/[^ ]* //'`
 do
 	#TODO printf with nice columns
 	echo -n "$i .."
@@ -89,3 +91,4 @@ do
 	dclean-item "$i" "$type"
 	[ $? -eq 123 ] && exit 123
 done
+IFS=$OLD_IFS

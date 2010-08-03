@@ -35,7 +35,6 @@ function action_open () {
 
 }
 
-
 [ -z "$1" -o ! -r "$1" ] && die "\$1 must be a readable file/directory. not: $1"
 target=$1
 if [ -n "$2" ]
@@ -51,7 +50,7 @@ done= # only set this var to true when the user would be a real weirdo to say he
 while [ "$done" != y ]
 do
 	echo "---------------------------------------------"
-	ls -alhd $target # TODO make this configurable. maybe a du -hsc of dirs? or ls -alh of contents?
+	ls -alhd "$target" # TODO make this configurable. maybe a du -hsc of dirs? or ls -alh of contents?
 	[ $type != normal ] && $type status "$target"
 	echo "> actions:"
 	[ $type != normal ] && echo " [a]dd to $type"
