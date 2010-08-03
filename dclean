@@ -58,7 +58,7 @@ then
 	sort_order='-r' # big -> small (bigger files first)
 fi
 
-for i in `find "$dir" -maxdepth 1 -exec stat -c "$var %n" {} + | sort -n $sort_order | cut -d ' ' -f2`
+for i in `find "$dir" -maxdepth 1 -exec stat -c "%$var %n" {} + | sort -n $sort_order | cut -d ' ' -f2`
 do
 	#TODO printf with nice columns
 	echo -n "$i .."
