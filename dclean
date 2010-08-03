@@ -14,7 +14,7 @@ if [ -n "$2" ]
 then
 	if [ "$2" != atime -a "$2" != mtime -a "$2" != ctime -a "$2" != size ]
 	then
-		die "\$2 must be one of: atime, mtime, ctime, size. not: $2"
+		die "\$2 must be one of: atime, mtime, ctime, size (default). not: $2"
 	fi
 fi
 dir=$1
