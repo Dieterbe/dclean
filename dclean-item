@@ -51,6 +51,7 @@ while [ "$done" != y ]
 do
 	echo "---------------------------------------------"
 	ls -alhd "$target" # TODO make this configurable. maybe a du -hsc of dirs? or ls -alh of contents?
+	file "$target"
 	[ $type != normal ] && $type status "$target"
 	echo "> actions:"
 	[ $type != normal ] && echo " [a]dd to $type"
