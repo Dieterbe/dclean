@@ -55,6 +55,8 @@ do
 	[ $type != normal ] && $type status "$target"
 	echo "> actions:"
 	[ $type != normal ] && echo " [a]dd to $type"
+	echo " [b] Buffer to ddm repo (ddm-buffer)"
+	echo " [B] Move to ddm repo with fallback to buffer (ddm-move)"
 	[ $type != normal ] && echo " [c]ommit in $type"
 	[ $type != normal ] && echo " [d]iff" || echo "[d]iff against file"
 	[ $type != normal ] && echo " [D]iff against file"
@@ -77,6 +79,14 @@ do
 				else
 					$type add "$target" && done=y
 				fi
+				;;
+			b)
+				echo "Which repo? server-root selected for your convenience"
+				ddm-buffer server-root "$target" && done=y
+				;;
+			B)
+				echo "Which repo? server-root selected for your convenience"
+				ddm-move server-root "$target" && done=y
 				;;
 			c)
 				if [ $type == normal ]
