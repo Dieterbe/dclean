@@ -61,6 +61,7 @@ do
 	[ $type != normal ] && echo " [d]iff" || echo "[d]iff against file"
 	[ $type != normal ] && echo " [D]iff against file"
 	[ $type != normal ] && echo " [i]gnore in $type"
+	echo " [l]ist contents (unzip -l, ls -l, etc)"
 	echo " [m]v"
 	echo " [M]eld"
 	echo " [r]m"
@@ -112,6 +113,20 @@ do
 					echo "not under VCS"
 				else
 					echo "TODO add a nice entry compatible with svn/git, and ordered"
+				fi
+				;;
+			l)
+				# TODO: make this a standalone script
+				if [[ "$target" =~ .zip ]]
+				then
+					unzip -l "$target"
+				elif [[ "$target" =~ .tar.gz ]]
+				then
+					tar tzf "$target"
+				fi
+				if [ -d "$target" ]
+				then
+					ls -l "$target"
 				fi
 				;;
 			m)
