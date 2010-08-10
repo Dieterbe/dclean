@@ -52,7 +52,7 @@ fi
 
 OLD_IFS=$IFS
 IFS=$'\n'
-for i in `find "$dir" -maxdepth 1 -exec stat -c "%$var %n" {} + | sort -n $sort_order | sed 's/[^ ]* //'`
+for i in `find "$dir" -maxdepth 1 -mindepth 1 -exec stat -c "%$var %n" {} + | sort -n $sort_order | sed 's/[^ ]* //'`
 do
 	#TODO printf with nice columns
 	echo -n "$i .."
