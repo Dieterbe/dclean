@@ -1,45 +1,32 @@
 #!/bin/bash
 
 # main program
-# $1 directory
-# $2 order criterium
+# -d directory (mandatory)
+# -o order criterion. must be one of: atime, mtime, ctime, size (default size)
 
-die () {
-	echo "$@" >&2
-	exit 2
-}
+source `dirname $0`/lib-dclean
+order=size
+while getopts "d:o:" OPTION
+do
+	case $OPTION in
+	d)
+		dir=$OPTARG
+		;;
+	o)
+		order=$OPTARG
+		;;
+	esac
 
-[ -z "$1" -o ! -r "$1" -o ! -d "$1" ] && die "\$1 must be a readable directory. not: $1"
-if [ -n "$2" ]
-then
-	if [ "$2" != atime -a "$2" != mtime -a "$2" != ctime -a "$2" != size ]
-	then
-		die "\$2 must be one of: atime, mtime, ctime, size (default). not: $2"
-	fi
-fi
-dir=$1
-order=${2:-size}
+done
 
-if [ -r "$dir/.svn" ] && svn info "$dir" &>/dev/null
-then
-	type=svn
-	echo "detected svn dir"
-else
-	# with git, do not check for $dir/.git, there is only a .git in the project root
-	cd "$dir" || die "cannot cd into $dir. this should never happen"
-	git status &>/dev/null
-	if [ $? -lt 128 ]
-	then
-		type=git
-		echo "detected git dir"
-	fi
-	cd - >/dev/null || die "cannot go back to dir where i started. this should never happen"
-fi
-if [ -z "$type" ]
-then
-	type=normal
-	echo "detected non-vcs dir"
-fi
+[ -z "$dir" -o ! -r "$dir" -o ! -d "$dir" ] && die_error "-d must be a readable directory. not: $dir"
+
+orders=(atime mtime ctime size)
+check_is_in $order "${orders[@]}" || die_error "-o must be one of: $orders (defaults to size). not: $order"
+
+is_svn $dir    && type=svn    && echo "detected svn dir"
+is_git $dir    && type=git    && echo "detected git dir"
+[ -z "$type" ] && type=normal && echo "detected non-vcs dir"
 
 # find is great because of its good conditionals, but lacks support for ordering
 # ls is good for ordering files, but has no conditionals

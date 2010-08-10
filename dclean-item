@@ -4,10 +4,7 @@
 # $1 filename
 # $2 vcs type (optional)
 
-die () {
-	echo "$@" >&2
-	exit 2
-}
+source `dirname $0`/lib-dclean # in case you want to run this standalone
 
 function action_open () {
 	echo "Open with?:" #TODO check extension, mimetype, num of lines and give this info. 
@@ -35,16 +32,11 @@ function action_open () {
 
 }
 
-[ -z "$1" -o ! -r "$1" ] && die "\$1 must be a readable file/directory. not: $1"
+[ -z "$1" -o ! -r "$1" ] && die_error "\$1 must be a readable file/directory. not: $1"
 target=$1
-if [ -n "$2" ]
-then
-        if [ "$2" != git -a "$2" != svn -a "$2" != normal ]
-        then
-                die "\$2 must be one of: svn, git, normal. not: $2"
-        fi
-fi
 type=${2:-normal}
+types=(git svn normal)
+check_is_in $type "${types[@]}" || die_error "\$2 must be one of: $types (defaults to 'normal'). not: $type"
 
 done= # only set this var to true when the user would be a real weirdo to say he wasn't done.
 while [ "$done" != y ]

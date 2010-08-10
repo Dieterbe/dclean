@@ -1,0 +1,23 @@
+#!/bin/bash
+
+source /usr/lib/libui.sh
+libui_sh_init
+
+is_svn () {
+	dir=$1
+	[ -r "$dir/.svn" ] && svn info "$dir" &>/dev/null
+}
+
+is_git () {
+	dir=$1
+	# with git, do not check for $dir/.git, there is only a .git in the project root
+	cd "$dir" || die "cannot cd into $dir. this should never happen"
+	git status &>/dev/null
+	if [ $? -lt 128 ]
+	then
+		return 0
+	else
+		cd - >/dev/null || die "cannot go back to dir where i started. this should never happen"
+		return 1
+	fi
+}
