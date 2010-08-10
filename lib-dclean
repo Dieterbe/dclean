@@ -21,3 +21,37 @@ is_git () {
 		return 1
 	fi
 }
+vcs_ignored () {
+	local i=$1
+	[ -r "$1" ] || die_error "Could not read from '$1' (arg1 of vcs_ignored) to determine ignored state"
+	ret=1
+	if [ $type = svn ]
+	then
+		status=$(svn status "$i")
+		[[ -n "$status" && $status = I* ]] && ret=0
+	elif [ $type = git ]
+	then
+		cd `dirname $i`
+		file=`basename $i`
+		git ls-files -i -o --exclude-standard $file | grep -q "^$file$" && ret=0
+		cd - > /dev/null
+	fi
+	return $ret
+}
+
+vcs_clean () {
+	local i=$1
+	[ -r "$1" ] || die_error "Could not read from '$1' (arg1 of vcs_clean) to determine cleanliness"
+	ret=0
+	if [ $type = svn ]
+	then
+		status=$(svn status "$i")
+		[[ -n "$status" && $status != I* ]] && ret=1
+	elif [ $type == git ]
+	then
+		cd `dirname $i`
+		git status --porcelain `basename $i` | egrep -q '^ M|\?\? ' && ret=1
+		cd - > /dev/null
+	fi
+	return $ret
+}

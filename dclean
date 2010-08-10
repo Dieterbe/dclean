@@ -3,10 +3,12 @@
 # main program
 # -d directory (mandatory)
 # -o order criterion. must be one of: atime, mtime, ctime, size (default size)
+# -s: skip clean and ignored files (files which are in a VCS but are not modified or ignored)
 
 source `dirname $0`/lib-dclean
 order=size
-while getopts "d:o:" OPTION
+skipclean=0
+while getopts "d:o:s" OPTION
 do
 	case $OPTION in
 	d)
@@ -14,6 +16,9 @@ do
 		;;
 	o)
 		order=$OPTARG
+		;;
+	s)
+		skipclean=1
 		;;
 	esac
 
@@ -52,28 +57,31 @@ do
 	#TODO printf with nice columns
 	echo -n "$i .."
 	state=
-	if [ $type == svn ]
-	then
-		[[ $i =~ /.svn$ ]] && continue
-		status=$(svn status "$i")
-		if [[ -n "$status" && $status != I* ]]
-		then
-			echo "dirty"
-		else
-			echo "clean"
-			continue
-		fi
-	elif [ $type == git ]
-	then
-		#TODO
-		echo "warning. git not supported yet. treating as unversioned (no optimisations)" #not skipping anything even if they are clean in git
-	else
-		echo
-	fi
+	# skip VCS metadata directories
+	[[ $i =~ /.svn$ ]] && echo "skipping because it's a VCS dir" && continue
+	[[ $i =~ /.git$ ]] && echo "skipping because it's a VCS dir" && continue
 	if [ ! -r "$i" ]
 	then
 		echo "no read permissions. skipping.."
 		continue
+	fi
+	if [ $type = normal ]
+	then
+		echo "not a versioncontrolled file. it seems.."
+	else
+		if vcs_ignored $i
+		then
+			echo -n 'ignored file.'
+			[ $skipclean -eq 1 ] && echo '  skipping...' && continue
+			echo
+		elif vcs_clean $i
+		then
+			echo -n 'clean file.'
+			[ $skipclean -eq 1 ] && echo '  skipping...' && continue
+			echo
+		else
+			echo "dirty file..."
+		fi
 	fi
 	dclean-item "$i" "$type"
 	[ $? -eq 123 ] && exit 123
