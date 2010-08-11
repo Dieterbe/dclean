@@ -71,7 +71,7 @@ do
 				then
 					echo "not under VCS"
 				else
-					$type add "$target" && done=y
+					$type add "$target"
 				fi
 				;;
 			b)
