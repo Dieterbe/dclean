@@ -107,8 +107,14 @@ do
 				if [ $type == normal ]
 				then
 					echo "not under VCS"
+				elif [ $type == svn ]
+				then
+					dirname=` dirname  $target`
+					basename=`basename $target`
+					echo "adding $basename to svn:ignore of $dirname"
+					svn propedit --editor-cmd "echo $basename >>" svn:ignore "$dirname" && done=y
 				else
-					echo "TODO add a nice entry compatible with svn/git, and ordered"
+					git ignore-wizard $target && done=y
 				fi
 				;;
 			l)
