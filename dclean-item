@@ -65,7 +65,7 @@ do
 	echo " ddm [w]izard"
 	if read -n 1
 	then
-		case $REPLY in
+		case "$REPLY" in
 			a)
 				if [ $type == normal ]
 				then
@@ -91,7 +91,7 @@ do
 				fi
 				;;
 			d|D)
-				if [ $type != normal -a $REPLY == d ]
+				if [ $type != normal -a "$REPLY" == d ]
 				then
 					$type diff "$target"
 				else
@@ -164,7 +164,7 @@ do
 				echo "skipping"
 				done=y;;
 		esac
-		if [ $REPLY != 'r' -a ! -r "$target" ];
+		if [ "$REPLY" != 'r' -a ! -r "$target" ];
 		then
 			echo "It seems like whatever you did caused the file to vanish.  That's fine by me. Skipping..."
 			done=y
