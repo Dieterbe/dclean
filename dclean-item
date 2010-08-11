@@ -52,6 +52,7 @@ do
 	[ $type != normal ] && echo " [c]ommit in $type"
 	[ $type != normal ] && echo " [d]iff" || echo "[d]iff against file"
 	[ $type != normal ] && echo " [D]iff against file"
+	[ -d "$target" ] && echo ' d[e]scend into directory, to work on the contents'
 	[ $type != normal ] && echo " [i]gnore in $type"
 	echo " [l]ist contents (unzip -l, ls -l, etc)"
 	echo " [m]v"
@@ -98,6 +99,9 @@ do
 					read diff
 					diff "$target" "$diff"
 				fi
+				;;
+			e)
+				exit 55
 				;;
 			i)
 				if [ $type == normal ]

@@ -6,6 +6,8 @@
 # -s: skip clean and ignored files (files which are in a VCS but are not modified or ignored)
 
 source `dirname $0`/lib-dclean
+dclean_args=("$@") # used later when recursively calling self (descending into dirs)
+
 order=size
 skipclean=0
 while getopts "d:o:s" OPTION
@@ -84,6 +86,17 @@ do
 		fi
 	fi
 	dclean-item "$i" "$type"
-	[ $? -eq 123 ] && exit 123
+	ret=$?
+	[ $ret -eq 123 ] && exit 123
+	if [ $ret -eq 55 ]
+	then
+		# we're asked to descend.
+		# call self again with all the same arguments, but replace the target directory
+		for arg in "${dclean_args[@]}"
+		do
+			new_args+=("`echo "$arg" | sed "s#$dir#$i#"`")
+		done
+		$0 "${new_args[@]}"
+	fi
 done
 IFS=$OLD_IFS
