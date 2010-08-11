@@ -62,7 +62,7 @@ do
 	echo " [o]pen"
 	echo " [s]kip (or <Enter>)"
 	echo " [q]uit"
-
+	echo " ddm [w]izard"
 	if read -n 1
 	then
 		case $REPLY in
@@ -158,6 +158,8 @@ do
 				exit 123;;
 			o)
 				action_open;;
+			w)
+				ddm-wizard $target;;
 			*)
 				echo "skipping"
 				done=y;;
