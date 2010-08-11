@@ -11,4 +11,7 @@ libui-sh
 git-scripts (for git ignore-wizard)
 
 todo: tresholds and more stuff.
- see http://bbs.archlinux.org/viewtopic.php?id=87167
+see http://bbs.archlinux.org/viewtopic.php?id=87167
+
+It's advisable to use DDM and run ddm-flush* scripts first,
+this will make your life easier (less dirty files to process manually)
